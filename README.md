@@ -1,27 +1,24 @@
 # TOSINT - Terminal OSINT Framework
 
-A professional, modular Python TUI framework for OSINT operations with 33 integrated tools across 8 categories.
+Python TUI OSINT framework with 33 tools across 8 categories.
 
 ## Features
 
-🎯 **Multi-panel TUI interface** using Textual with Flexoki theme
-📊 **8 OSINT categories** with 33 integrated tools
-🔐 **Secure API key management** stored in `~/Documents/TOSINT/.config/`
-📤 **Export capabilities** (JSON, CSV, Markdown, Clipboard)
-🖥️ **CLI tool streaming** - Live output for tools like Sherlock and Nmap
-🎨 **Color-coded output** for easy reading
-⚡ **Progress tracking** with visual indicators
+- Interactive shell interface with Flexoki theme
+- 33 integrated OSINT tools
+- Secure API key storage
+- Export to JSON/CSV/MD/Clipboard
+- Live CLI streaming
+- Color-coded output
 
 ## Installation
 
-### 1. Create Virtual Environment (Recommended)
+### 1. Create Virtual Environment
 
 ```bash
 cd TOSINT
 python3 -m venv venv
-source venv/bin/activate  # On Linux/Mac
-# or
-venv\Scripts\activate  # On Windows
+source venv/bin/activate  # Linux/Mac
 ```
 
 ### 2. Install Dependencies
@@ -30,24 +27,12 @@ venv\Scripts\activate  # On Windows
 pip install -r requirements.txt
 ```
 
-### 3. Install Optional CLI Tools
-
-Some tools require external CLI applications:
+### 3. Optional CLI Tools
 
 ```bash
-# Username search tools
-pip install sherlock-project
-
-# Network tools
-sudo apt install nmap  # Linux
-brew install nmap      # macOS
-
-# Metadata extraction
-sudo apt install exiftool  # Linux
-brew install exiftool      # macOS
-
-# WAF detection
-pip install wafw00f
+pip install sherlock-project wafw00f
+sudo apt install nmap exiftool  # Linux
+brew install nmap exiftool      # macOS
 ```
 
 ### 4. Run TOSINT
@@ -58,84 +43,84 @@ python main.py
 
 ## Tool Categories
 
-### 📞 Phone Numbers (3 tools)
-- **phonenumbers** ✅ - Phone validation and carrier lookup
-- **Numverify** - Phone API validation (requires API key)
-- **Truecaller Unofficial** - Caller ID lookup
+### Phone Numbers (3 tools)
+- phonenumbers - Phone validation and carrier lookup
+- Numverify - Phone API validation (requires API key)
+- Truecaller Unofficial - Caller ID lookup
 
-### 🌐 Web & URLs (4 tools)
-- **Waybackpy** ✅ - Archive.org Wayback Machine queries
-- **WhatWeb** - Web technology identification
-- **Aquatone** - Screenshot & subdomain takeover
-- **Photon** - Web crawler & data extractor
+### Web & URLs (4 tools)
+- Waybackpy - Archive.org Wayback Machine queries
+- WhatWeb - Web technology identification
+- Aquatone - Screenshot & subdomain takeover
+- Photon - Web crawler & data extractor
 
-### 👥 People & Social Media (4 tools)
-- **Sherlock** ✅🖥️ - Username search across 400+ sites
-- **Maigret** - Enhanced username search
-- **Snoop** - Russian social networks search
-- **EmailHarvester** - Email scraping from domains
+### People & Social Media (4 tools)
+- Sherlock - Username search across 400+ sites (CLI streaming)
+- Maigret - Enhanced username search
+- Snoop - Russian social networks search
+- EmailHarvester - Email scraping from domains
 
-### 🌍 Network & IP Intelligence (4 tools)
-- **Shodan** - IoT/device search (requires API key)
-- **Censys** - Internet-wide scanning (requires API key)
-- **IPinfo** ✅ - IP geolocation & ASN info
-- **ASN Lookup** ✅ - BGP/ASN information
+### Network & IP Intelligence (4 tools)
+- Shodan - IoT/device search (requires API key)
+- Censys - Internet-wide scanning (requires API key)
+- IPinfo - IP geolocation & ASN info
+- ASN Lookup - BGP/ASN information
 
-### 🔍 Domains & Infrastructure (6 tools)
-- **theHarvester** - Email & subdomain harvesting
-- **Sublist3r** ✅ - Subdomain enumeration
-- **Amass** - Attack surface mapping
-- **DNSRecon** - DNS enumeration
-- **Nmap** ✅🖥️ - Port scanning & network discovery
-- **WafW00f** ✅ - WAF detection
+### Domains & Infrastructure (6 tools)
+- theHarvester - Email & subdomain harvesting
+- Sublist3r - Subdomain enumeration
+- Amass - Attack surface mapping
+- DNSRecon - DNS enumeration
+- Nmap - Port scanning & network discovery (CLI streaming)
+- WafW00f - WAF detection
 
-### 📁 Files & Metadata (3 tools)
-- **Exiftool** ✅🖥️ - Metadata extraction from images/documents
-- **pefile** ✅ - Windows PE file analysis
-- **Yara** - Pattern-based file scanning
+### Files & Metadata (3 tools)
+- Exiftool - Metadata extraction from images/documents (CLI streaming)
+- pefile - Windows PE file analysis
+- Yara - Pattern-based file scanning
 
-### 🔓 Data Breaches & Leaks (3 tools)
-- **HaveIBeenPwned** ✅ - Email breach checking (requires API key)
-- **Dehashed** - Leaked credentials search (requires API key)
-- **BreachDirectory** - Local breach database search
+### Data Breaches & Leaks (3 tools)
+- HaveIBeenPwned - Email breach checking (requires API key)
+- Dehashed - Leaked credentials search (requires API key)
+- BreachDirectory - Local breach database search
 
-### 🔧 Misc OSINT (3 tools)
-- **GHunt** - Google account investigation
-- **Creepy** - Geolocation OSINT
-- **SpiderFoot** - Automated OSINT collection
-
-**Legend:**
-- ✅ = Fully functional and tested
-- 🖥️ = Supports live CLI streaming output
-- 🔑 = Requires API key
+### Misc OSINT (3 tools)
+- GHunt - Google account investigation
+- Creepy - Geolocation OSINT
+- SpiderFoot - Automated OSINT collection
 
 ## Navigation
 
 | Key | Action |
 |-----|--------|
-| **Tab / Shift+Tab** | Switch between panels |
-| **Arrow keys** | Navigate within lists |
-| **Enter** | Select item / Run tool |
-| **Q** | Quit application |
+| Tab / Shift+Tab | Switch between panels |
+| Arrow keys | Navigate within lists |
+| Enter | Select item / Run tool |
+| Q | Quit application |
+
+## Shell Commands
+
+When a tool is open:
+- Type your input and press Enter
+- `help` - Show available commands
+- `clear` - Clear shell output
+- `exit` or `quit` - Close current tool
 
 ## Export Options
 
-After running a tool, use the export buttons:
-- **📋 Copy** - Copy results to clipboard
-- **JSON** - Export as JSON with metadata
-- **CSV** - Export as CSV table
-- **MD** - Export as Markdown report
+After running a tool:
+- Copy - Copy results to clipboard
+- JSON - Export as JSON with metadata
+- CSV - Export as CSV table
+- MD - Export as Markdown report
 
-All exports saved to: `~/Documents/TOSINT/exports/`
+Exports saved to: `~/Documents/TOSINT/exports/`
 
-## API Key Management
+## API Keys
 
-1. Run a tool that requires an API key
-2. You'll be prompted to enter it once
-3. Keys are securely stored in `~/Documents/TOSINT/.config/api_keys.json`
-4. Keys are reused automatically on future runs
+API keys are stored securely in `~/Documents/TOSINT/.config/api_keys.json`
 
-**Get API Keys:**
+Get keys at:
 - HaveIBeenPwned: https://haveibeenpwned.com/API/Key
 - Shodan: https://account.shodan.io/
 - Censys: https://search.censys.io/account/api
@@ -170,31 +155,26 @@ TOSINT/
 ## Requirements
 
 - Python 3.10+
-- See `requirements.txt` for Python packages
-- Optional: CLI tools (nmap, sherlock, exiftool, etc.)
+- Python packages in `requirements.txt`
+- Optional: CLI tools (nmap, sherlock, exiftool)
 
 ## Development
 
-TOSINT follows a modular architecture:
-1. **BaseTool** interface in `tools/base_tool.py`
-2. Each tool implements: `validate_input()`, `run()`, `format_output()`
-3. CLI tools can enable `supports_streaming()` for live output
-4. Tools are auto-loaded from `data/tools.json`
+Modular architecture with `BaseTool` interface:
+- Each tool implements: `validate_input()`, `run()`, `format_output()`
+- CLI streaming support via `supports_streaming()`
+- Tools auto-loaded from `data/tools.json`
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License
 
 ## Contributing
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Follow the BaseTool interface pattern
-4. Submit a pull request
+Fork, create feature branch, follow BaseTool pattern, submit PR.
 
 ## Disclaimer
 
-This tool is for educational and authorized security testing only. Users are responsible for complying with all applicable laws and regulations. Unauthorized access to computer systems is illegal.
+For educational and authorized testing only. Users responsible for legal compliance.
 
 

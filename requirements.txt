@@ -16,10 +16,29 @@ waybackpy>=3.0.6
 shodan>=1.31.0
 sublist3r>=1.1
 pefile>=2023.2.7
+censys>=2.2.0
+ghunt>=2.1.0
+yara-python>=4.3.0
 
 # Export functionality
 pyperclip>=1.8.2
 
-# For CLI tool detection
-# Note: External CLI tools like sherlock-project, maigret, nmap, amass, etc. 
-# must be installed separately via their specific methods or system packages
+# CLI OSINT Tools (installable via pip)
+sherlock-project>=0.14.0
+maigret>=0.4.4
+holehe>=1.61
+Photon>=1.3.0
+wafw00f>=2.2.0
+EmailHarvester>=1.3.0
+creepy>=1.4
+
+# Note: Some tools require system packages or separate installation:
+# - nmap: sudo apt install nmap (Linux) or brew install nmap (macOS)
+# - exiftool: sudo apt install exiftool (Linux) or brew install exiftool (macOS)
+# - amass: https://github.com/owasp-amass/amass/releases
+# - theharvester: pip install theHarvester
+# - aquatone: https://github.com/michenriksen/aquatone/releases
+# - whatweb: sudo apt install whatweb (Linux)
+# - dnsrecon: pip install dnsrecon
+# - snoop: pip install snoop-project
+# - spiderfoot: https://github.com/smicallef/spiderfoot

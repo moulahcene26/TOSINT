@@ -4,7 +4,7 @@ Main application using Textual for the interface
 """
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
 from textual.widgets import Header, Footer, Static, ListView, ListItem, Label, Input, Button, RichLog
 from textual.binding import Binding
 from textual.screen import ModalScreen
@@ -13,6 +13,7 @@ from pathlib import Path
 from core.tool_manager import ToolManager
 from core.api_manager import APIManager
 import asyncio
+import subprocess
 
 
 class InputModal(ModalScreen):
@@ -105,17 +106,26 @@ class ToolsPanel(Static):
 
 
 class OutputPanel(Static):
-    """Right panel - Tool input/output"""
+    """Right panel - Tool input/output with interactive shell"""
     
     def compose(self) -> ComposeResult:
-        yield Label("[bold green]Input / Output[/bold green]", classes="panel-title")
+        yield Label("[bold green]Interactive Tool Shell[/bold green]", classes="panel-title")
         with Horizontal(id="export-buttons"):
-            yield Button("📋 Copy", id="btn-copy", variant="primary")
+            yield Button("Copy", id="btn-copy", variant="primary")
             yield Button("JSON", id="btn-export-json", variant="success")
             yield Button("CSV", id="btn-export-csv", variant="success")
             yield Button("MD", id="btn-export-md", variant="success")
         yield Static("Select a category and tool to begin", id="output-content", classes="output-content")
         yield RichLog(id="cli-output", wrap=True, markup=True)
+        # Interactive shell components
+        with Vertical(id="shell-container"):
+            yield RichLog(id="shell-output", wrap=True, markup=True, highlight=True)
+            with Horizontal(id="shell-input-container"):
+                yield Label("❯", id="shell-prompt")
+                yield Input(placeholder="Enter command or input...", id="shell-input")
+                yield Button("Send", id="btn-shell-send", variant="primary")
+                yield Button("Clear", id="btn-shell-clear", variant="warning")
+
 
 
 class TOSINTApp(App):
@@ -219,6 +229,52 @@ class TOSINTApp(App):
         min-width: 10;
     }
     
+    /* Shell container styles */
+    #shell-container {
+        display: none;
+        height: 1fr;
+        border: thick $primary;
+        background: $surface;
+        padding: 1;
+    }
+    
+    #shell-container.active {
+        display: block;
+    }
+    
+    #shell-output {
+        height: 1fr;
+        background: $surface;
+        border: solid $accent;
+        padding: 1;
+        margin-bottom: 1;
+    }
+    
+    #shell-input-container {
+        height: auto;
+        align: left middle;
+    }
+    
+    #shell-prompt {
+        width: auto;
+        margin-right: 1;
+        color: $accent;
+    }
+    
+    #shell-input {
+        width: 1fr;
+        margin-right: 1;
+    }
+    
+    #btn-shell-send {
+        width: auto;
+        margin-right: 1;
+    }
+    
+    #btn-shell-clear {
+        width: auto;
+    }
+    
     .output-content {
         height: 1fr;
         background: $boost;
@@ -262,6 +318,10 @@ class TOSINTApp(App):
         self.api_manager = APIManager()
         self.last_result = None  # Store last result for export
         self.last_tool_name = None  # Store last tool name for export
+        self.current_tool_instance = None  # Current active tool
+        self.current_tool_name = None  # Name of current tool
+        self.shell_active = False  # Is shell mode active
+        self.shell_history = []  # Command history
         
     def compose(self) -> ComposeResult:
         """Create the main layout"""
@@ -392,6 +452,225 @@ class TOSINTApp(App):
         cli_output = self.query_one("#cli-output", RichLog)
         cli_output.clear()
     
+    def show_shell(self) -> None:
+        """Show interactive shell and hide other output"""
+        shell_container = self.query_one("#shell-container", Vertical)
+        output_content = self.query_one("#output-content", Static)
+        cli_output = self.query_one("#cli-output", RichLog)
+        
+        shell_container.add_class("active")
+        output_content.add_class("hidden")
+        cli_output.remove_class("visible")
+        
+        self.shell_active = True
+        
+        # Focus shell input
+        shell_input = self.query_one("#shell-input", Input)
+        shell_input.focus()
+    
+    def hide_shell(self) -> None:
+        """Hide interactive shell and show normal output"""
+        shell_container = self.query_one("#shell-container", Vertical)
+        output_content = self.query_one("#output-content", Static)
+        
+        shell_container.remove_class("active")
+        output_content.remove_class("hidden")
+        
+        self.shell_active = False
+        self.current_tool_instance = None
+        self.current_tool_name = None
+    
+    def clear_shell(self) -> None:
+        """Clear shell output"""
+        shell_output = self.query_one("#shell-output", RichLog)
+        shell_output.clear()
+        self.shell_history = []
+    
+    def write_to_shell(self, content: str, style: str = "") -> None:
+        """Write content to shell output"""
+        shell_output = self.query_one("#shell-output", RichLog)
+        if style:
+            shell_output.write(f"[{style}]{content}[/{style}]")
+        else:
+            shell_output.write(content)
+    
+    async def handle_shell_input(self, command: str) -> None:
+        """Handle shell command input"""
+        if not command.strip():
+            return
+        
+        # Add to history
+        self.shell_history.append(command)
+        
+        # Display command
+        self.write_to_shell(f"❯ {command}", "cyan")
+        
+        # Handle special commands
+        if command.strip().lower() in ['exit', 'quit', 'q']:
+            self.write_to_shell("\n[yellow]Exiting tool...[/yellow]\n")
+            self.hide_shell()
+            self.update_output("[green]Tool session ended[/green]")
+            return
+        
+        if command.strip().lower() == 'clear':
+            self.clear_shell()
+            return
+        
+        if command.strip().lower() == 'help':
+            # Show tool-specific help if available
+            if self.current_tool_name:
+                self.write_to_shell(f"\n[cyan bold]Tool: {self.current_tool_name}[/cyan bold]")
+                
+                # Try to run tool with -h or --help flag
+                tool_cmd = None
+                if self.current_tool_name.lower() == 'sherlock':
+                    tool_cmd = 'sherlock --help'
+                elif self.current_tool_name.lower() == 'maigret':
+                    tool_cmd = 'maigret -h'
+                elif self.current_tool_name.lower() == 'nmap':
+                    tool_cmd = 'nmap -h'
+                elif self.current_tool_name.lower() == 'exiftool':
+                    tool_cmd = 'exiftool -h'
+                elif self.current_tool_name.lower() == 'wafw00f':
+                    tool_cmd = 'wafw00f -h'
+                elif self.current_tool_name.lower() == 'whatweb':
+                    tool_cmd = 'whatweb -h'
+                elif self.current_tool_name.lower() == 'amass':
+                    tool_cmd = 'amass -h'
+                elif self.current_tool_name.lower() == 'theharvester':
+                    tool_cmd = 'theHarvester -h'
+                elif self.current_tool_name.lower() == 'aquatone':
+                    tool_cmd = 'aquatone -h'
+                elif self.current_tool_name.lower() == 'photon':
+                    tool_cmd = 'python -m photon --help'
+                elif self.current_tool_name.lower() == 'dnsrecon':
+                    tool_cmd = 'dnsrecon -h'
+                elif self.current_tool_name.lower() == 'snoop':
+                    tool_cmd = 'snoop --help'
+                elif self.current_tool_name.lower() == 'ghunt':
+                    tool_cmd = 'ghunt --help'
+                elif self.current_tool_name.lower() == 'creepy':
+                    tool_cmd = 'creepy --help'
+                elif self.current_tool_name.lower() == 'spiderfoot':
+                    tool_cmd = 'spiderfoot --help'
+                elif self.current_tool_name.lower() == 'emailharvester':
+                    tool_cmd = 'EmailHarvester -h'
+                
+                if tool_cmd:
+                    try:
+                        import subprocess
+                        result = subprocess.run(
+                            tool_cmd.split(),
+                            capture_output=True,
+                            text=True,
+                            timeout=5
+                        )
+                        help_text = result.stdout or result.stderr
+                        if help_text:
+                            self.write_to_shell(f"\n{help_text}\n")
+                        else:
+                            self.write_to_shell(f"\n[yellow]Help not available for {self.current_tool_name}[/yellow]\n")
+                    except Exception as e:
+                        self.write_to_shell(f"\n[yellow]Could not retrieve tool help: {str(e)}[/yellow]\n")
+                else:
+                    self.write_to_shell(f"\n[yellow]Tool help not configured for {self.current_tool_name}[/yellow]\n")
+            
+            # Show shell commands
+            self.write_to_shell("\n[cyan]Shell commands:[/cyan]")
+            self.write_to_shell("  • Enter tool-specific input (username, domain, IP, etc.)")
+            self.write_to_shell("  • clear  - Clear shell output")
+            self.write_to_shell("  • help   - Show tool help and shell commands")
+            self.write_to_shell("  • exit   - Exit tool shell\n")
+            return
+        
+        # Execute tool with input
+        if self.current_tool_instance:
+            await self.execute_tool_in_shell(command)
+        else:
+            self.write_to_shell("\n[red]No tool loaded[/red]\n")
+    
+    async def execute_tool_in_shell(self, input_data: str) -> None:
+        """Execute the current tool with shell input"""
+        tool_name = self.last_tool_name
+        tool_instance = self.current_tool_instance
+        
+        # Validate input
+        is_valid, error_msg = tool_instance.validate_input(input_data)
+        if not is_valid:
+            self.write_to_shell(f"\n[red]Invalid input: {error_msg}[/red]\n")
+            return
+        
+        # Get API keys if needed
+        api_keys = {}
+        if self.selected_tool.get('requires_api'):
+            service_name = tool_name.lower()
+            api_key = self.api_manager.get_key(service_name)
+            if api_key:
+                api_keys[service_name] = api_key
+        
+        self.write_to_shell(f"\n[cyan]Executing {tool_name}...[/cyan]\n")
+        
+        try:
+            # Check if tool supports streaming
+            if tool_instance.supports_streaming():
+                # Run with streaming
+                process = tool_instance.run_streaming(input_data, api_keys)
+                await self.stream_to_shell(process, tool_name)
+            else:
+                # Run normally
+                result_data = tool_instance.run(input_data, api_keys)
+                
+                # Store result
+                self.last_result = result_data
+                
+                # Format and display
+                formatted_output = tool_instance.format_output(result_data)
+                
+                if result_data.get('success'):
+                    self.write_to_shell(f"[green]{formatted_output}[/green]\n")
+                else:
+                    self.write_to_shell(f"[red]{formatted_output}[/red]\n")
+        
+        except Exception as e:
+            self.write_to_shell(f"\n[red]Error: {str(e)}[/red]\n")
+    
+    async def stream_to_shell(self, process, tool_name: str) -> None:
+        """Stream CLI process output to shell"""
+        output_lines = []
+        
+        # Stream stdout
+        while True:
+            line = await asyncio.get_event_loop().run_in_executor(
+                None, process.stdout.readline
+            )
+            if not line:
+                break
+            line = line.decode('utf-8', errors='ignore').rstrip()
+            if line:
+                self.write_to_shell(line)
+                output_lines.append(line)
+        
+        # Wait for process
+        await asyncio.get_event_loop().run_in_executor(None, process.wait)
+        
+        # Get stderr
+        stderr = process.stderr.read().decode('utf-8', errors='ignore')
+        if stderr:
+            self.write_to_shell(f"\n[yellow]{stderr}[/yellow]")
+        
+        self.write_to_shell(f"\n[green]✓ Completed (exit code: {process.returncode})[/green]\n")
+        
+        # Store result
+        self.last_result = {
+            'success': process.returncode == 0,
+            'data': {
+                'stdout': '\n'.join(output_lines),
+                'stderr': stderr,
+                'exit_code': process.returncode
+            }
+        }
+
+    
     async def stream_cli_output(self, process, tool_name: str) -> dict:
         """Stream CLI process output to RichLog widget"""
         import subprocess
@@ -444,12 +723,26 @@ class TOSINTApp(App):
         }
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle export button presses"""
-        if self.last_result is None:
-            self.update_output("[yellow]No results to export. Run a tool first.[/yellow]")
+        """Handle button presses"""
+        button_id = event.button.id
+        
+        # Shell buttons
+        if button_id == "btn-shell-send":
+            shell_input = self.query_one("#shell-input", Input)
+            command = shell_input.value
+            shell_input.value = ""
+            if command:
+                asyncio.create_task(self.handle_shell_input(command))
             return
         
-        button_id = event.button.id
+        if button_id == "btn-shell-clear":
+            self.clear_shell()
+            return
+        
+        # Export buttons
+        if self.last_result is None:
+            self.notify("No results to export. Run a tool first.", severity="warning", timeout=2)
+            return
         
         if button_id == "btn-copy":
             self.copy_to_clipboard()
@@ -459,6 +752,14 @@ class TOSINTApp(App):
             self.export_csv()
         elif button_id == "btn-export-md":
             self.export_markdown()
+    
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Handle Enter key in shell input"""
+        if event.input.id == "shell-input":
+            command = event.value
+            event.input.value = ""
+            if command:
+                asyncio.create_task(self.handle_shell_input(command))
     
     def copy_to_clipboard(self) -> None:
         """Copy last result to clipboard"""
@@ -569,68 +870,28 @@ class TOSINTApp(App):
             text += f"{data}\n"
         
         return text
-
-        cli_output = self.query_one("#cli-output", RichLog)
-        
-        cli_output.write(f"[bold cyan]Running {tool_name}...[/bold cyan]\n")
-        
-        output_lines = []
-        
-        # Stream stdout
-        while True:
-            line = await asyncio.get_event_loop().run_in_executor(
-                None, process.stdout.readline
-            )
-            if not line:
-                break
-            line = line.decode('utf-8', errors='ignore').rstrip()
-            if line:
-                cli_output.write(line)
-                output_lines.append(line)
-        
-        # Wait for process to complete
-        await asyncio.get_event_loop().run_in_executor(None, process.wait)
-        
-        # Get stderr if any
-        stderr = process.stderr.read().decode('utf-8', errors='ignore')
-        if stderr:
-            cli_output.write(f"\n[yellow]{stderr}[/yellow]")
-        
-        cli_output.write(f"\n[bold green]Process completed with exit code: {process.returncode}[/bold green]")
-        
-        return {
-            'returncode': process.returncode,
-            'stdout': '\n'.join(output_lines),
-            'stderr': stderr
-        }
-
     
     async def action_execute_tool(self) -> None:
-        """Handle Enter key to execute selected tool"""
+        """Handle Enter key to open tool in shell"""
         if self.selected_tool is None:
-            self.update_output("[yellow]Please select a tool first[/yellow]")
+            self.notify("Please select a tool first", severity="warning", timeout=2)
             return
+        
+        tool_name = self.selected_tool.get('name', 'Unknown')
         
         # Check if tool requires API key
         if self.selected_tool.get('requires_api'):
-            tool_name = self.selected_tool.get('name', 'Unknown')
             service_name = tool_name.lower()
             
             # Check if we have the API key
             if not self.api_manager.has_key(service_name):
                 api_link = self.selected_tool.get('api_link', 'N/A')
-                self.update_output(
-                    f"[yellow]API Key Required[/yellow]\n\n"
-                    f"This tool requires an API key.\n"
-                    f"Get your key at: {api_link}\n\n"
-                    f"You will be prompted to enter it..."
-                )
                 
-                # Prompt for API key
+                # Still use modal for API key (security/one-time setup)
                 result = await self.push_screen(
                     InputModal(
                         title=f"API Key for {tool_name}",
-                        prompt=f"Enter your API key:",
+                        prompt=f"Enter your API key:\n\nGet your key at: {api_link}",
                         is_password=True
                     )
                 )
@@ -640,93 +901,42 @@ class TOSINTApp(App):
                     is_valid, error_msg = self.api_manager.validate_key_format(service_name, result)
                     if is_valid:
                         self.api_manager.set_key(service_name, result)
-                        self.update_output(f"[green]API key saved successfully[/green]")
+                        self.notify(f"API key saved for {tool_name}", severity="information", timeout=2)
                     else:
-                        self.update_output(f"[red]Invalid API key: {error_msg}[/red]")
+                        self.notify(f"Invalid API key: {error_msg}", severity="error", timeout=3)
                         return
                 else:
-                    self.update_output("[yellow]API key entry cancelled[/yellow]")
+                    self.notify("API key entry cancelled", severity="warning", timeout=2)
                     return
         
-        # Prompt for input data
-        tool_name = self.selected_tool.get('name', 'Unknown')
-        result = await self.push_screen(
-            InputModal(
-                title=f"Run {tool_name}",
-                prompt="Enter input data (e.g., username, domain, IP):",
-                is_password=False
-            )
-        )
+        # Create tool instance
+        tool_instance = self.tool_manager.create_tool_instance(self.selected_tool)
         
-        if result:
-            # Try to create and run the tool
-            tool_instance = self.tool_manager.create_tool_instance(self.selected_tool)
-            
-            if tool_instance is None:
-                self.update_output(
-                    f"[yellow]Tool '{tool_name}' not yet implemented[/yellow]\n\n"
-                    f"[dim]Input: {result}[/dim]\n\n"
-                    f"This tool will be available in a future update."
-                )
-                return
-            
-            # Validate input
-            is_valid, error_msg = tool_instance.validate_input(result)
-            if not is_valid:
-                self.update_output(f"[red]Invalid input: {error_msg}[/red]")
-                return
-            
-            # Get API keys if needed
-            api_keys = {}
-            if self.selected_tool.get('requires_api'):
-                service_name = tool_name.lower()
-                api_key = self.api_manager.get_key(service_name)
-                if api_key:
-                    api_keys[service_name] = api_key
-            
-            # Check if tool supports streaming
-            if tool_instance.supports_streaming():
-                try:
-                    # Run with streaming output
-                    process = tool_instance.run_streaming(result, api_keys)
-                    await self.stream_cli_output(process, tool_name)
-                except Exception as e:
-                    self.update_output(
-                        f"[bold red]Streaming Error[/bold red]\n\n"
-                        f"[red]{str(e)}[/red]"
-                    )
-            else:
-                # Run normally without streaming
-                self.update_output(f"[cyan]Executing {tool_name}...[/cyan]\n\n[dim]Please wait...[/dim]")
-                
-                try:
-                    result_data = tool_instance.run(result, api_keys)
-                    
-                    # Store result for export
-                    self.last_result = result_data
-                    self.last_tool_name = tool_name
-                    
-                    # Format and display output
-                    formatted_output = tool_instance.format_output(result_data)
-                    
-                    if result_data.get('success'):
-                        self.update_output(
-                            f"[bold green]Results for {tool_name}[/bold green]\n\n"
-                            f"{formatted_output}\n\n"
-                            f"[dim]Execution completed successfully[/dim]"
-                        )
-                    else:
-                        self.update_output(
-                            f"[bold red]Error executing {tool_name}[/bold red]\n\n"
-                            f"{formatted_output}"
-                        )
-                except Exception as e:
-                    self.update_output(
-                        f"[bold red]Unexpected Error[/bold red]\n\n"
-                        f"[red]{str(e)}[/red]"
-                    )
-        else:
-            self.update_output("[yellow]Execution cancelled[/yellow]")
+        if tool_instance is None:
+            self.notify(f"Tool '{tool_name}' not yet implemented", severity="warning", timeout=3)
+            return
+        
+        # Store tool instance and name
+        self.current_tool_instance = tool_instance
+        self.current_tool_name = tool_name
+        self.last_tool_name = tool_name
+        
+        # Show shell interface
+        self.clear_shell()
+        self.show_shell()
+        
+        # Welcome message
+        self.write_to_shell(f"[bold cyan]╔══════════════════════════════════════╗[/bold cyan]")
+        self.write_to_shell(f"[bold cyan]║  {tool_name:^34}  ║[/bold cyan]")
+        self.write_to_shell(f"[bold cyan]╚══════════════════════════════════════╝[/bold cyan]\n")
+        
+        self.write_to_shell(f"[yellow]Description:[/yellow] {self.selected_tool.get('description', 'N/A')}\n")
+        
+        if self.selected_tool.get('requires_api'):
+            self.write_to_shell("[green]✓ API Key Configured[/green]\n")
+        
+        self.write_to_shell("\n[cyan]Enter your input below (or type 'help' for commands):[/cyan]")
+        self.write_to_shell("[dim]Type 'exit' or 'quit' to close this tool[/dim]\n")
 
 
 def run():
