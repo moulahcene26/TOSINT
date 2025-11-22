@@ -13,6 +13,10 @@ import shutil
 class SherlockTool(BaseTool):
     """Find usernames across social networks using Sherlock"""
     
+    def supports_streaming(self) -> bool:
+        """Sherlock supports streaming output"""
+        return True
+    
     def validate_input(self, input_data: str) -> tuple[bool, str]:
         """Validate username input"""
         if not input_data or not input_data.strip():
@@ -26,6 +30,31 @@ class SherlockTool(BaseTool):
             return False, "Username cannot contain spaces"
         
         return True, ""
+    
+    def run_streaming(self, input_data: str, api_keys: Optional[Dict[str, str]] = None):
+        """
+        Run Sherlock with streaming output
+        
+        Returns:
+            subprocess.Popen object
+        """
+        username = input_data.strip()
+        
+        # Check if sherlock is installed
+        if not shutil.which('sherlock'):
+            raise RuntimeError('Sherlock is not installed. Install it with: pip install sherlock-project')
+        
+        # Start sherlock process with streaming output
+        process = subprocess.Popen(
+            ['sherlock', username, '--timeout', '10'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1,
+            universal_newlines=False
+        )
+        
+        return process
+
     
     def run(self, input_data: str, api_keys: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """

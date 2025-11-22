@@ -22,6 +22,15 @@ class BaseTool(ABC):
         self.integration = tool_data.get('integration', 'unknown')
         self.requires_api = tool_data.get('requires_api', False)
         self.api_link = tool_data.get('api_link', None)
+    
+    def supports_streaming(self) -> bool:
+        """
+        Check if this tool supports CLI streaming output
+        
+        Returns:
+            True if tool should stream output in CLI box, False otherwise
+        """
+        return False
         
     @abstractmethod
     def validate_input(self, input_data: str) -> tuple[bool, str]:
@@ -54,6 +63,20 @@ class BaseTool(ABC):
             }
         """
         pass
+    
+    def run_streaming(self, input_data: str, api_keys: Optional[Dict[str, str]] = None):
+        """
+        Execute the tool with streaming output (for CLI tools)
+        
+        Args:
+            input_data: User input
+            api_keys: Dictionary of API keys if required
+            
+        Returns:
+            subprocess.Popen object with stdout/stderr pipes
+        """
+        raise NotImplementedError("This tool does not support streaming output")
+
     
     def get_input_prompt(self) -> str:
         """

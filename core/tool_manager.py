@@ -12,6 +12,11 @@ from tools.phone_tools import PhoneNumbersTool, NumverifyTool, TruecallerTool
 from tools.web_tools import WaybackpyTool, WhatWebTool, AquatoneTool, PhotonTool
 from tools.people_tools import SherlockTool, MaigretTool, SnoopTool, EmailHarvesterTool
 from tools.network_tools import ShodanTool, CensysTool, IPinfoTool, ASNLookupTool
+from tools.domain_tools import (TheHarvesterTool, Sublist3rTool, AmassTool, 
+                                DNSReconTool, NmapTool, WafW00fTool)
+from tools.file_tools import ExiftoolTool, PefileTool, YaraTool
+from tools.breach_tools import HaveIBeenPwnedTool, DehashedTool, BreachDirectoryTool
+from tools.misc_tools import GHuntTool, CreepyTool, SpiderFootTool
 
 
 class ToolManager:
@@ -129,7 +134,28 @@ class ToolManager:
             'IPinfo': IPinfoTool,
             'ASN Lookup': ASNLookupTool,
             
-            # More tools will be added in subsequent implementations
+            # Domains & Infrastructure
+            'theHarvester': TheHarvesterTool,
+            'Sublist3r': Sublist3rTool,
+            'Amass': AmassTool,
+            'DNSRecon': DNSReconTool,
+            'Nmap': NmapTool,
+            'WafW00f': WafW00fTool,
+            
+            # Files & Metadata
+            'Exiftool': ExiftoolTool,
+            'pefile': PefileTool,
+            'Yara': YaraTool,
+            
+            # Data Breaches & Leaks
+            'HaveIBeenPwned': HaveIBeenPwnedTool,
+            'Dehashed': DehashedTool,
+            'BreachDirectory': BreachDirectoryTool,
+            
+            # Misc OSINT
+            'GHunt': GHuntTool,
+            'Creepy': CreepyTool,
+            'SpiderFoot': SpiderFootTool,
         }
         
         tool_class = tool_map.get(tool_name)
