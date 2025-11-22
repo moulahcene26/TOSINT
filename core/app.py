@@ -107,6 +107,9 @@ class OutputPanel(Static):
 class TOSINTApp(App):
     """TOSINT - Terminal OSINT Framework"""
     
+    # Use Flexoki theme
+    CSS_PATH = None  # We'll define CSS inline
+    
     CSS = """
     Screen {
         background: $surface;
@@ -199,6 +202,9 @@ class TOSINTApp(App):
     TITLE = "TOSINT - Terminal OSINT Framework"
     SUB_TITLE = "Professional OSINT Tool Suite"
     
+    # Set Flexoki theme
+    THEME = "flexoki"
+    
     def __init__(self):
         super().__init__()
         self.tools_data = {}
@@ -259,15 +265,15 @@ class TOSINTApp(App):
         
         if list_id == "category-list":
             # Category selected
-            if hasattr(event.item, 'data_category'):
-                self.selected_category = event.item.data_category
+            if hasattr(event.item, 'category_name'):
+                self.selected_category = event.item.category_name
                 self.populate_tools(self.selected_category)
                 self.update_output(f"[cyan]Selected category: {self.selected_category}[/cyan]\n\nSelect a tool from the middle panel")
             
         elif list_id == "tools-list":
             # Tool selected
-            if hasattr(event.item, 'data_tool'):
-                self.selected_tool = event.item.data_tool
+            if hasattr(event.item, 'tool_data'):
+                self.selected_tool = event.item.tool_data
                 self.show_tool_info(self.selected_tool)
     
     def populate_tools(self, category: str) -> None:
