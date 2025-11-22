@@ -260,20 +260,30 @@ class TOSINTApp(App):
             category_list.append(item)
     
     def on_list_view_selected(self, event: ListView.Selected) -> None:
-        """Handle list selection events"""
-        list_id = event.list_view.id
+        """Handle list selection events (Enter key)"""
+        self._handle_list_selection(event.list_view, event.item)
+    
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        """Handle list highlight events (arrow keys/clicks)"""
+        # When an item is highlighted, treat it as selected
+        self._handle_list_selection(event.list_view, event.item)
+    
+    def _handle_list_selection(self, list_view: ListView, item: ListItem) -> None:
+        """Common handler for list item selection"""
+        list_id = list_view.id
         
         if list_id == "category-list":
             # Category selected
-            if hasattr(event.item, 'category_name'):
-                self.selected_category = event.item.category_name
+            if hasattr(item, 'category_name'):
+                self.selected_category = item.category_name
+                self.selected_tool = None  # Reset tool selection
                 self.populate_tools(self.selected_category)
                 self.update_output(f"[cyan]Selected category: {self.selected_category}[/cyan]\n\nSelect a tool from the middle panel")
             
         elif list_id == "tools-list":
             # Tool selected
-            if hasattr(event.item, 'tool_data'):
-                self.selected_tool = event.item.tool_data
+            if hasattr(item, 'tool_data'):
+                self.selected_tool = item.tool_data
                 self.show_tool_info(self.selected_tool)
     
     def populate_tools(self, category: str) -> None:
