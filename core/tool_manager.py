@@ -10,6 +10,8 @@ from tools.base_tool import BaseTool
 # Import tool implementations
 from tools.phone_tools import PhoneNumbersTool, NumverifyTool, TruecallerTool
 from tools.web_tools import WaybackpyTool, WhatWebTool, AquatoneTool, PhotonTool
+from tools.people_tools import SherlockTool, MaigretTool, SnoopTool, EmailHarvesterTool
+from tools.network_tools import ShodanTool, CensysTool, IPinfoTool, ASNLookupTool
 
 
 class ToolManager:
@@ -114,6 +116,18 @@ class ToolManager:
             'WhatWeb': WhatWebTool,
             'Aquatone': AquatoneTool,
             'Photon': PhotonTool,
+            
+            # People & Social Media
+            'Sherlock': SherlockTool,
+            'Maigret': MaigretTool,
+            'Snoop': SnoopTool,
+            'EmailHarvester': EmailHarvesterTool,
+            
+            # Network & IP Intelligence
+            'Shodan': ShodanTool,
+            'Censys': CensysTool,
+            'IPinfo': IPinfoTool,
+            'ASN Lookup': ASNLookupTool,
             
             # More tools will be added in subsequent implementations
         }

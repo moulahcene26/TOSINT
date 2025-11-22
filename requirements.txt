@@ -13,3 +13,8 @@ requests>=2.31.0
 # Tool-specific dependencies
 phonenumbers>=8.13.0
 waybackpy>=3.0.6
+shodan>=1.31.0
+
+# For CLI tool detection
+# Note: External CLI tools like sherlock-project, maigret, etc. 
+# must be installed separately via pip or their specific methods
