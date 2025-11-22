@@ -9,6 +9,7 @@ from tools.base_tool import BaseTool
 
 # Import tool implementations
 from tools.phone_tools import PhoneNumbersTool, NumverifyTool, TruecallerTool
+from tools.web_tools import WaybackpyTool, WhatWebTool, AquatoneTool, PhotonTool
 
 
 class ToolManager:
@@ -107,6 +108,12 @@ class ToolManager:
             'phonenumbers': PhoneNumbersTool,
             'Numverify': NumverifyTool,
             'Truecaller Unofficial': TruecallerTool,
+            
+            # Web & URLs
+            'Waybackpy': WaybackpyTool,
+            'WhatWeb': WhatWebTool,
+            'Aquatone': AquatoneTool,
+            'Photon': PhotonTool,
             
             # More tools will be added in subsequent implementations
         }

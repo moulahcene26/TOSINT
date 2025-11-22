@@ -12,3 +12,4 @@ requests>=2.31.0
 
 # Tool-specific dependencies
 phonenumbers>=8.13.0
+waybackpy>=3.0.6
