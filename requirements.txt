@@ -1,0 +1,14 @@
+# TOSINT - Terminal OSINT Framework
+# Python dependencies
+
+# TUI Framework
+textual>=0.47.0
+
+# Progress bars and charts
+tqdm>=4.66.0
+
+# Utility libraries
+requests>=2.31.0
+
+# Tool-specific dependencies
+phonenumbers>=8.13.0

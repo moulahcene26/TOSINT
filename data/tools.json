@@ -1,0 +1,48 @@
+{
+"People & Social Media": [
+{"name": "Sherlock", "description": "Find usernames across social networks", "integration": "subprocess or Python import", "requires_api": false},
+{"name": "Maigret", "description": "Advanced username enumeration on 500+ sites", "integration": "Python import or CLI", "requires_api": false},
+{"name": "Snoop", "description": "Username OSINT on many platforms", "integration": "Python package", "requires_api": false},
+{"name": "EmailHarvester", "description": "Scrape emails from search engines", "integration": "CLI wrapper", "requires_api": true, "api_link": "https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/overview"}
+],
+"Domains & Infrastructure": [
+{"name": "theHarvester", "description": "Emails, subdomains, hosts from search engines", "integration": "CLI or Python import", "requires_api": true, "api_link": "https://learn.microsoft.com/en-us/bing/search-apis/bing-web-search/overview"},
+{"name": "Sublist3r", "description": "Subdomain enumeration", "integration": "Python import", "requires_api": false},
+{"name": "Amass", "description": "Deep DNS enumeration & asset discovery", "integration": "CLI output parsing", "requires_api": false},
+{"name": "DNSRecon", "description": "DNS enumeration", "integration": "CLI wrapper", "requires_api": false},
+{"name": "Nmap", "description": "Port scanning and service enumeration", "integration": "python-nmap or subprocess", "requires_api": false},
+{"name": "WafW00f", "description": "WAF fingerprinting", "integration": "Python module", "requires_api": false}
+],
+"Web & URLs": [
+{"name": "Waybackpy", "description": "Archive.org wrapper", "integration": "Pure Python module", "requires_api": false},
+{"name": "WhatWeb", "description": "Fingerprint web technologies", "integration": "CLI wrapper", "requires_api": false},
+{"name": "Aquatone", "description": "Web reconnaissance + screenshots", "integration": "Parse CLI output", "requires_api": false},
+{"name": "Photon", "description": "Crawler extracting URLs, emails, files", "integration": "CLI", "requires_api": false}
+],
+"Files & Metadata": [
+{"name": "Exiftool", "description": "Extract metadata from images, videos, documents", "integration": "CLI with JSON output", "requires_api": false},
+{"name": "pefile", "description": "Analyze PE files", "integration": "Python module", "requires_api": false},
+{"name": "Yara", "description": "Pattern-based file scanning", "integration": "libyara Python module", "requires_api": false}
+],
+"Network & IP Intelligence": [
+{"name": "Shodan", "description": "IP/device intelligence", "integration": "Official Python library", "requires_api": true, "api_link": "https://account.shodan.io/register"},
+{"name": "Censys", "description": "Internet scanning search engine", "integration": "Official Python library", "requires_api": true, "api_link": "https://search.censys.io/account/api"},
+{"name": "IPinfo", "description": "IP geolocation & ASN", "integration": "Python module", "requires_api": true, "api_link": "https://ipinfo.io/signup"},
+{"name": "ASN Lookup", "description": "Query ASN info via public APIs", "integration": "requests to public endpoints", "requires_api": false}
+],
+"Data Breaches & Leaks": [
+{"name": "HaveIBeenPwned", "description": "Check breach presence", "integration": "REST API", "requires_api": true, "api_link": "https://haveibeenpwned.com/API/Key"},
+{"name": "Dehashed", "description": "Search leaked credentials", "integration": "API via Python", "requires_api": true, "api_link": "https://www.dehashed.com/register"},
+{"name": "BreachDirectory", "description": "Search leaked databases", "integration": "API via Python", "requires_api": true, "api_link": "https://breachdirectory.com/api"}
+],
+"Phone Numbers": [
+{"name": "phonenumbers", "description": "Phone number parsing/validation", "integration": "Python library", "requires_api": false},
+{"name": "Numverify", "description": "Phone validation + carrier info", "integration": "API via requests", "requires_api": true, "api_link": "https://numverify.com/signup/free"},
+{"name": "Truecaller Unofficial", "description": "Unofficial number lookup", "integration": "Python libraries exist", "requires_api": false}
+],
+"Misc OSINT": [
+{"name": "GHunt", "description": "Google account OSINT", "integration": "CLI wrapper", "requires_api": false},
+{"name": "Creepy", "description": "Geolocation OSINT from various sources", "integration": "CLI", "requires_api": false},
+{"name": "SpiderFoot", "description": "Automated OSINT engine", "integration": "Local API or CLI", "requires_api": false}
+]
+}
