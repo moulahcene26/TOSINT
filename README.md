@@ -43,6 +43,4 @@ TOSINT/
 └── requirements.txt
 ```
 
-## Development Progress
 
-See INSTRUCTIONS.md for detailed development steps and progress tracking.

@@ -247,8 +247,10 @@ class TOSINTApp(App):
         category_list.clear()
         
         for category in self.tools_data.keys():
-            item = ListItem(Label(category))
-            item.data_category = category
+            label = Label(category)
+            item = ListItem(label)
+            # Store category name directly on the ListItem
+            object.__setattr__(item, 'category_name', category)
             category_list.append(item)
     
     def on_list_view_selected(self, event: ListView.Selected) -> None:
@@ -257,14 +259,16 @@ class TOSINTApp(App):
         
         if list_id == "category-list":
             # Category selected
-            self.selected_category = event.item.data_category
-            self.populate_tools(self.selected_category)
-            self.update_output(f"[cyan]Selected category: {self.selected_category}[/cyan]\n\nSelect a tool from the middle panel")
+            if hasattr(event.item, 'data_category'):
+                self.selected_category = event.item.data_category
+                self.populate_tools(self.selected_category)
+                self.update_output(f"[cyan]Selected category: {self.selected_category}[/cyan]\n\nSelect a tool from the middle panel")
             
         elif list_id == "tools-list":
             # Tool selected
-            self.selected_tool = event.item.data_tool
-            self.show_tool_info(self.selected_tool)
+            if hasattr(event.item, 'data_tool'):
+                self.selected_tool = event.item.data_tool
+                self.show_tool_info(self.selected_tool)
     
     def populate_tools(self, category: str) -> None:
         """Populate tools list for selected category"""
@@ -274,8 +278,10 @@ class TOSINTApp(App):
         if category in self.tools_data:
             tools = self.tools_data[category]
             for tool in tools:
-                item = ListItem(Label(tool['name']))
-                item.data_tool = tool
+                label = Label(tool['name'])
+                item = ListItem(label)
+                # Store tool data directly on the ListItem
+                object.__setattr__(item, 'tool_data', tool)
                 tools_list.append(item)
     
     def show_tool_info(self, tool: dict) -> None:
