@@ -9,7 +9,7 @@ echo ""
 # Check Python version
 echo "[1/5] Checking Python version..."
 if ! command -v python3 &> /dev/null; then
-    echo "❌ Python 3 is not installed. Please install Python 3.10 or higher."
+    echo "Python 3 is not installed. Please install Python 3.10 or higher."
     exit 1
 fi
 
@@ -21,23 +21,23 @@ echo ""
 echo "[2/5] Creating virtual environment..."
 if [ ! -d "venv" ]; then
     python3 -m venv venv
-    echo "✓ Virtual environment created"
+    echo "Virtual environment created"
 else
-    echo "✓ Virtual environment already exists"
+    echo "Virtual environment already exists"
 fi
 
 # Activate virtual environment
 echo ""
 echo "[3/5] Activating virtual environment..."
 source venv/bin/activate
-echo "✓ Virtual environment activated"
+echo " Virtual environment activated"
 
 # Install Python dependencies
 echo ""
 echo "[4/5] Installing Python dependencies..."
 pip install --upgrade pip > /dev/null 2>&1
 pip install -r requirements.txt
-echo "✓ Python dependencies installed"
+echo " Python dependencies installed"
 
 # Create config directory
 echo ""
@@ -45,11 +45,11 @@ echo "[5/5] Creating configuration directory..."
 mkdir -p ~/Documents/TOSINT/.config
 mkdir -p ~/Documents/TOSINT/exports
 chmod 700 ~/Documents/TOSINT/.config
-echo "✓ Configuration directory created at ~/Documents/TOSINT/"
+echo " Configuration directory created at ~/Documents/TOSINT/"
 
 echo ""
 echo "================================"
-echo "  Installation Complete! ✓"
+echo "  Installation Complete! "
 echo "================================"
 echo ""
 echo "To run TOSINT:"
